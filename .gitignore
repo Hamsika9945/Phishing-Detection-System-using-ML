@@ -1,0 +1,32 @@
+# Virtual environment
+venv/
+ENV/
+*.pyc
+__pycache__/
+*.pyo
+
+# IDE settings
+.idea/
+.vscode/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Credentials / cookies
+*.cookie
+*.google-cookie
+
+# Logs & cache
+*.log
+*.cache
+
+# Build / dist
+dist/
+build/
+
+# Database files (optional: keep if you want to share users.db)
+*.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
