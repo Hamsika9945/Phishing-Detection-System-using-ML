@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phishing URL Detection</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      background-color: #f5f7fa;
+      color: #333333;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .container {
+      margin-top: 50px;
+      max-width: 700px;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(100, 100, 100, 0.1);
+    }
+    input[type="text"] {
+      width: 100%;
+      height: 50px;
+      border-radius: 10px;
+      padding-left: 20px;
+      font-size: 18px;
+      border: 1.5px solid #cccccc;
+      margin-bottom: 15px;
+      color: #333333;
+      background-color: #fefefe;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #6ca0dc;
+      background-color: #fff;
+    }
+    button {
+      font-size: 18px;
+      padding: 10px 25px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background-color 0.3s ease;
+    }
+    #button1 {
+      background-color: #4caf50;
+      color: white;
+      border: 1.5px solid #4caf50;
+      display: none;
+    }
+    #button1:hover {
+      background-color: #388e3c;
+      border-color: #388e3c;
+    }
+    #button2 {
+      background-color: #f44336;
+      color: white;
+      border: 1.5px solid #f44336;
+      display: none;
+    }
+    #button2:hover {
+      background-color: #b71c1c;
+      border-color: #b71c1c;
+    }
+    #prediction {
+      margin-top: 25px;
+      font-weight: bold;
+      font-size: 1.4rem;
+      text-align: center;
+      color: #555555;
+    }
+    .navbar-dark {
+      background-color: #e9ecef !important;
+    }
+    .navbar-dark .navbar-nav .nav-link {
+      color: #555555;
+    }
+    .navbar-dark .navbar-nav .nav-link:hover {
+      color: #0d6efd;
+    }
+    .navbar-brand {
+      color: #333333 !important;
+      font-weight: 600;
+    }
+    .navbar-toggler {
+      border-color: #adb5bd;
+    }
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%2855,55,55, 0.7%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="{{ url_for('predict') }}">Phishing Detection</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          {% if 'user_id' in session %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('predict') }}">Detection</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h2 class="text-center mb-4">Phishing URL Detection</h2>
+    <form method="post" action="{{ url_for('predict') }}">
+      <input
+        type="text"
+        placeholder="Enter the URL here"
+        name="url"
+        required
+        value="{{ url or '' }}"
+      />
+      <button type="submit" class="btn btn-primary w-100">Check URL</button>
+    </form>
+
+    <div id="prediction"></div>
+
+    <button
+      id="button1"
+      onclick="window.open('{{ url }}', '_blank')"
+      role="button"
+    >
+      Continue
+    </button>
+    <button
+      id="button2"
+      onclick="window.open('{{ url }}', '_blank')"
+      role="button"
+    >
+      Still want to Continue
+    </button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let x = parseFloat('{{ xx }}');
+    let url = '{{ url }}';
+    let predictionDiv = document.getElementById("prediction");
+    let btn1 = document.getElementById("button1");
+    let btn2 = document.getElementById("button2");
+
+    btn1.style.display = "none";
+    btn2.style.display = "none";
+    predictionDiv.innerHTML = "";
+
+    if (url) {
+      let num = x * 100;
+      if (x >= 0.5 && x <= 1) {
+        predictionDiv.innerHTML =
+          "Website is " + num.toFixed(2) + "% safe to use...";
+        btn1.style.display = "inline-block";
+      } else if (x >= 0 && x < 0.5) {
+        num = 100 - num;
+        predictionDiv.innerHTML =
+          "Website is " + num.toFixed(2) + "% unsafe to use...";
+        btn2.style.display = "inline-block";
+      }
+    }
+  </script>
+</body>
+</html>
